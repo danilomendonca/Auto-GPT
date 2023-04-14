@@ -34,12 +34,30 @@ def create_agent(task, prompt, model):
 
     return key, agent_reply
 
+def is_valid_int(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
 
 def message_agent(key, message):
     """Send a message to an agent and return its response"""
     global agents
 
-    task, messages, model = agents[int(key)]
+    # Check if the key is a valid integer
+    if is_valid_int(key):
+        agent = agents[int(key)]
+    # Check if the key is a valid string
+    elif isinstance(key, str):
+        # TODO: find agent via task name
+        agent = next((agent for agent in agents.values() if agent[0] == key), None)
+
+    if agent is None:
+        return "AGENT NOT FOUND, PLEASE CREATE IT FIRST VIA start_agent"
+
+    task, messages, model = agent
+
 
     # Add user message to message history before sending to agent
     messages.append({"role": "user", "content": message})
