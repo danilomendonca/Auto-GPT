@@ -33,7 +33,10 @@ def fix_and_parse_json(
 ) -> Union[str, Dict[Any, Any]]:
     """Fix and parse JSON string"""
     try:
-        json_str = json_str.replace("\t", "")
+        if isinstance(json_str, str):
+            json_str = json_str.replace("\t", "")
+        elif isinstance(json_str, dict):
+            json_str = json.dumps(json_str)
         return json.loads(json_str)
     except json.JSONDecodeError as _:  # noqa: F841
         try:
