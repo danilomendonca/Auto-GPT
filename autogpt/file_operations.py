@@ -87,12 +87,26 @@ def ingest_file(filename, memory, max_length=4000, overlap=200):
     except Exception as e:
         print(f"Error while ingesting file '{filename}': {str(e)}")
 
+def create_file(filename):
+    """Create a file"""
+    try:
+        filepath = safe_join(working_directory, filename)
+        directory = os.path.dirname(filepath)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(filepath, "w"):
+            pass
+        return "File created successfully."
+    except Exception as e:
+        return "Error: " + str(e)
 
 def write_to_file(filename, text):
     """Write text to a file"""
     try:
         filepath = safe_join(working_directory, filename)
         directory = os.path.dirname(filepath)
+        if not isinstance(text, str):
+            text = str(text)
         if not os.path.exists(directory):
             os.makedirs(directory)
         with open(filepath, "w", encoding="utf-8") as f:
@@ -112,6 +126,25 @@ def append_to_file(filename, text):
     except Exception as e:
         return "Error: " + str(e)
 
+def replace_in_file(filename, text, replacement):
+    """Replace text in a file"""
+    if not isinstance(text, str):
+            return "Error: Text to replace must be a string."
+    if not isinstance(replacement, str):
+        return "Error: Replacement text must be a string."
+    if text == "":
+        return "Error: Text to replace must not be empty."
+
+    try:
+        filepath = safe_join(working_directory, filename)
+        with open(filepath, "r") as f:
+            content = f.read()
+        content = content.replace(text, replacement)
+        with open(filepath, "w") as f:
+            f.write(content)
+        return "Text replaced successfully."
+    except Exception as e:
+        return "Error: " + str(e)
 
 def delete_file(filename):
     """Delete a file"""
@@ -139,3 +172,11 @@ def search_files(directory):
             found_files.append(relative_path)
 
     return found_files
+
+def file_exists(filename) -> bool:
+    """Check if a file exists"""
+    try:
+        filepath = safe_join(working_directory, filename)
+        return os.path.exists(filepath)
+    except Exception as e:
+        return False
