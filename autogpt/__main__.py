@@ -425,6 +425,34 @@ class Agent:
         self.prompt = prompt
         self.user_input = user_input
 
+    def parse_cmd_response(self, command:str, arguments:str, response:str) -> bool:
+        """Get the command result."""
+        # Try to fix the JSON using GPT:
+        function_string = "def parse_cmd_response(command:str, arguments:str, response:str) -> bool:"
+        args = [f"'''{command}'''", f"'''{arguments}'''", f"'''{response}'''"]
+        description_string = (
+            "Check if the command response is valid. This is used to determine if the"
+            " command was successful or not. Returns True if the command response indicates"
+            " success, and False otherwise.\n"
+            "This function is brilliant at guessing when the command was successful"
+        )
+        result_string = call_ai_function(
+            function_string, args, description_string, model=cfg.fast_llm_model
+        )
+        logger.debug("------------ Command Result ---------------")
+        logger.debug(f"Command: {command}")
+        logger.debug(f"Arguments: {arguments}")
+        logger.debug(f"Response: {response}")
+        logger.debug("-----------")
+        logger.debug(f"Result: {result_string}")
+        logger.debug("----------- End of Command Result ----------------")
+
+        if "True" in result_string:
+            return True
+        else:
+            return False
+
+
     def start_interaction_loop(self):
         # Interaction Loop
         loop_count = 0
@@ -458,7 +486,7 @@ class Agent:
 
             # Get command name and arguments
             try:
-                command_name, arguments = cmd.get_command(
+                commands = cmd.get_commands(
                     attempt_to_fix_json_by_finding_outermost_brackets(assistant_reply)
                 )
                 if cfg.speak_mode:
@@ -466,106 +494,142 @@ class Agent:
             except Exception as e:
                 logger.error("Error: \n", str(e))
 
-            if not cfg.continuous_mode and self.next_action_count == 0:
-                ### GET USER AUTHORIZATION TO EXECUTE COMMAND ###
-                # Get key press: Prompt the user to press enter to continue or escape
-                # to exit
-                self.user_input = ""
-                logger.typewriter_log(
-                    "NEXT ACTION: ",
-                    Fore.CYAN,
-                    f"COMMAND = {Fore.CYAN}{command_name}{Style.RESET_ALL}"
-                    f"  ARGUMENTS = {Fore.CYAN}{arguments}{Style.RESET_ALL}",
-                )
-                print(
-                    "Enter 'y' to authorise command, 'y -N' to run N continuous"
-                    " commands, 'n' to exit program, or enter feedback for"
-                    f" {self.ai_name}...",
-                    flush=True,
-                )
-                while True:
-                    console_input = utils.clean_input(
-                        Fore.MAGENTA + "Input:" + Style.RESET_ALL
-                    )
-                    if console_input.lower().rstrip() == "y":
-                        self.user_input = "GENERATE NEXT COMMAND JSON"
-                        break
-                    elif console_input.lower().startswith("y -"):
-                        try:
-                            self.next_action_count = abs(
-                                int(console_input.split(" ")[1])
-                            )
-                            self.user_input = "GENERATE NEXT COMMAND JSON"
-                        except ValueError:
-                            print(
-                                "Invalid input format. Please enter 'y -n' where n"
-                                " is the number of continuous tasks."
-                            )
-                            continue
-                        break
-                    elif console_input.lower() == "n":
-                        self.user_input = "EXIT"
-                        break
-                    else:
-                        self.user_input = console_input
-                        command_name = "human_feedback"
-                        break
+            # Execute commands
+            last_command_response = ""
 
-                if self.user_input == "GENERATE NEXT COMMAND JSON":
+            # avoid too many values to unpack (expected 2) error
+            if commands is None or len(commands) == 0 or len(commands[0]) != 2:
+                logger.typewriter_log("No commands found in response.")
+                self.user_input = "NOT GOOD: THE \"commands\" LIST IS EMPTY. GENERATE A JSON RESPONSE WITH COMMANDS."
+                continue
+
+            for cmd_index, (command_name, arguments) in enumerate(commands):
+                print(f"Executing command {cmd_index}")
+                if not cfg.continuous_mode and self.next_action_count == 0:
+                    ### GET USER AUTHORIZATION TO EXECUTE COMMAND ###
+                    # Get key press: Prompt the user to press enter to continue or escape
+                    # to exit
+                    self.user_input = ""
                     logger.typewriter_log(
-                        "-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=",
-                        Fore.MAGENTA,
-                        "",
+                        "NEXT ACTION: ",
+                        Fore.CYAN,
+                        f"COMMAND = {Fore.CYAN}{command_name}{Style.RESET_ALL}"
+                        f" ARGUMENTS = {Fore.CYAN}{arguments}{Style.RESET_ALL}",
                     )
-                elif self.user_input == "EXIT":
-                    print("Exiting...", flush=True)
+                    print(
+                        "Enter 'y' to authorise command, 'y -N' to run N continuous"
+                        " commands, 'n' to exit program, or enter feedback for"
+                        f" {self.ai_name}...",
+                        flush=True,
+                    )
+                    while True:
+                        console_input = utils.clean_input(
+                            Fore.MAGENTA + "Input:" + Style.RESET_ALL
+                        )
+                        if console_input.lower().rstrip() == "y":
+                            self.user_input = "GENERATE THE NEXT JSON RESPONSE"
+                            break
+                        elif console_input.lower().startswith("y -"):
+                            try:
+                                self.next_action_count = abs(
+                                    int(console_input.split(" ")[1])
+                                )
+                                self.user_input = "GENERATE THE NEXT JSON RESPONSE"
+                            except ValueError:
+                                print(
+                                    "Invalid input format. Please enter 'y -n' where n"
+                                    " is the number of continuous tasks."
+                                )
+                                continue
+                            break
+                        elif console_input.lower() == "n":
+                            self.user_input = "EXIT"
+                            break
+                        else:
+                            self.user_input = console_input
+                            command_name = "human_feedback"
+                            break
+
+                    if self.user_input == "GENERATE THE NEXT JSON RESPONSE":
+                        logger.typewriter_log(
+                            "-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=",
+                            Fore.MAGENTA,
+                            "",
+                        )
+                    elif self.user_input == "EXIT":
+                        print("Exiting...", flush=True)
+                        break
+                else:
+                    # Print command
+                    logger.typewriter_log(
+                        "NEXT ACTION: ",
+                        Fore.CYAN,
+                        f"COMMAND = {Fore.CYAN}{command_name}{Style.RESET_ALL}"
+                        f"  ARGUMENTS = {Fore.CYAN}{arguments}{Style.RESET_ALL}",
+                    )
+
+                # Execute command
+                command_success = False
+                last_command_response = ""
+                if command_name is not None and command_name.lower().startswith("error"):
+                    result = (
+                        f"Command {command_name} threw the following error: {arguments}"
+                    )
+                elif command_name == "human_feedback":
+                    result = f"Human feedback: {self.user_input}"
+                    command_success = True
+                else:
+                    result = (
+                        f"Command {command_name} "
+                        f"returned: {cmd.execute_command(command_name, arguments)}"
+                    )
+                    if self.next_action_count > 0:
+                        self.next_action_count -= 1
+
+                    if cmd.cmd_response_needs_verification(command_name):
+                        command_success = self.parse_cmd_response(command_name, arguments, result)
+                    elif "Unknown command" in result:
+                        command_success = False
+                    else:
+                        command_success = True
+
+                if command_success:
+                    last_command_response = result
+                    logger.typewriter_log(
+                        "COMMAND EXECUTION SUCCESS", Fore.GREEN, ""
+                    )
+                    self.user_input = "COMMANDS EXECUTED! GENERATE THE NEXT JSON RESPONSE"
+                else:
+                    logger.typewriter_log(
+                        "COMMAND EXECUTION FAILURE", Fore.RED, ""
+                    )
+                    self.user_input = f"THE {command_name} COMMAND FAILED. GENERATE THE NEXT JSON RESPONSE."
+
+                memory_to_add = (
+                    f"Assistant Reply: {assistant_reply} "
+                    f"\nResult: {result} "
+                    f"\nHuman Feedback: {self.user_input} "
+                )
+
+                self.memory.add(memory_to_add)
+
+                # Check if there's a result from the command append it to the message
+                # history
+                if result is not None:
+                    self.full_message_history.append(
+                        chat.create_chat_message("system", result)
+                    )
+                    logger.typewriter_log("SYSTEM: ", Fore.YELLOW, result)
+                else:
+                    self.full_message_history.append(
+                        chat.create_chat_message("system", "Unable to execute command")
+                    )
+                    logger.typewriter_log(
+                        "SYSTEM: ", Fore.YELLOW, "Unable to execute command"
+                    )
+
+                if not command_success:
                     break
-            else:
-                # Print command
-                logger.typewriter_log(
-                    "NEXT ACTION: ",
-                    Fore.CYAN,
-                    f"COMMAND = {Fore.CYAN}{command_name}{Style.RESET_ALL}"
-                    f"  ARGUMENTS = {Fore.CYAN}{arguments}{Style.RESET_ALL}",
-                )
-
-            # Execute command
-            if command_name is not None and command_name.lower().startswith("error"):
-                result = (
-                    f"Command {command_name} threw the following error: {arguments}"
-                )
-            elif command_name == "human_feedback":
-                result = f"Human feedback: {self.user_input}"
-            else:
-                result = (
-                    f"Command {command_name} "
-                    f"returned: {cmd.execute_command(command_name, arguments)}"
-                )
-                if self.next_action_count > 0:
-                    self.next_action_count -= 1
-
-            memory_to_add = (
-                f"Assistant Reply: {assistant_reply} "
-                f"\nResult: {result} "
-                f"\nHuman Feedback: {self.user_input} "
-            )
-
-            self.memory.add(memory_to_add)
-
-            # Check if there's a result from the command append it to the message
-            # history
-            if result is not None:
-                self.full_message_history.append(
-                    chat.create_chat_message("system", result)
-                )
-                logger.typewriter_log("SYSTEM: ", Fore.YELLOW, result)
-            else:
-                self.full_message_history.append(
-                    chat.create_chat_message("system", "Unable to execute command")
-                )
-                logger.typewriter_log(
-                    "SYSTEM: ", Fore.YELLOW, "Unable to execute command"
-                )
 
 
 if __name__ == "__main__":

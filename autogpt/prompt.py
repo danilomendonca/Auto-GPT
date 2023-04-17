@@ -26,33 +26,53 @@ def get_prompt() -> str:
     prompt_generator.add_constraint(
         'Exclusively use the commands listed in double quotes e.g. "command name"'
     )
+    prompt_generator.add_constraint(
+        'Command arguments must be in valid JSON format e.g. {"arg_name": "arg_value"}'
+    )
+    #prompt_generator.add_constraint(
+    #    'Use the listed commands as self-sufficient subroutines'
+    #)
+    prompt_generator.add_constraint(
+        'Always include at least one command in the commands list'
+    )
+    #prompt_generator.add_constraint(
+    #    'Do not include commands whose arguments depend on the output of other commands in the commands list'
+    #)
+    #prompt_generator.add_constraint(
+    #    'Use <angle brackets> to denote a replaceable text variable e.g. "<variable_name>".'
+    #)
 
     # Define the command list
     commands = [
         ("Google Search", "google", {"input": "<search>"}),
-        (
-            "Browse Website",
-            "browse_website",
-            {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
-        ),
+        #(
+        #    "Browse Website",
+        #    "browse_website",
+        #    {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
+        #),
         (
             "Start GPT Agent",
             "start_agent",
             {"name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"},
         ),
         (
-            "Message GPT Agent",
-            "message_agent",
-            {"key": "<key>", "message": "<message>"},
+            "Prompt GPT Agent",
+            "prompt_agent",
+            {"key": "<key>", "prompt": "<prompt>"},
         ),
+        #("Save memory", "save_memory", {"key": "<key>", "value": "<value>"}),
+        #("Load memory", "load_memory", {"key": "<key>"}),
         ("List GPT Agents", "list_agents", {}),
         ("Delete GPT Agent", "delete_agent", {"key": "<key>"}),
-        ("Write to file", "write_to_file", {"file": "<file>", "text": "<text>"}),
+        #("Write to file", "write_to_file", {"file": "<file>", "text": "<text>"}),
+        ("Create file", "create_file", {"file": "<file>"}),
         ("Read file", "read_file", {"file": "<file>"}),
-        ("Append to file", "append_to_file", {"file": "<file>", "text": "<text>"}),
         ("Delete file", "delete_file", {"file": "<file>"}),
+        #("File exists", "file_exists", {"file": "<file>"}),
+        ("Append to file", "append_to_file", {"file": "<file>", "text": "<text>"}),
+        ("Replace text in file", "replace_in_file", {"file": "<file>", "text": "<text>", "new_text": "<new_text>"}),
         ("Search Files", "search_files", {"directory": "<directory>"}),
-        ("Evaluate Code", "evaluate_code", {"code": "<full_code_string>"}),
+        #("Evaluate Code", "evaluate_code", {"code": "<full_code_string>"}),
         (
             "Get Improved Code",
             "improve_code",
@@ -63,15 +83,15 @@ def get_prompt() -> str:
             "write_tests",
             {"code": "<full_code_string>", "focus": "<list_of_focus_areas>"},
         ),
-        ("Execute Python File", "execute_python_file", {"file": "<file>"}),
-        (
-            "Execute Shell Command, non-interactive commands only",
-            "execute_shell",
-            {"command_line": "<command_line>"},
-        ),
+        #("Execute Python File", "execute_python_file", {"file": "<file>"}),
+        #(
+        #    "Execute Shell Command, non-interactive commands only",
+        #    "execute_shell",
+        #    {"command_line": "<command_line>"},
+        #),
         ("Task Complete (Shutdown)", "task_complete", {"reason": "<reason>"}),
-        ("Generate Image", "generate_image", {"prompt": "<prompt>"}),
-        ("Do Nothing", "do_nothing", {}),
+        ("Generate Image", "generate_image", {"prompt": "<prompt>"})#,
+        #("Do Nothing", "do_nothing", {}),
     ]
 
     # Add commands to the PromptGenerator object

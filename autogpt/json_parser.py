@@ -10,12 +10,12 @@ cfg = Config()
 
 JSON_SCHEMA = """
 {
-    "command": {
+    "commands": [{
         "name": "command name",
         "args": {
             "arg name": "value"
         }
-    },
+    }],
     "thoughts":
     {
         "text": "thought",
@@ -36,7 +36,7 @@ def fix_and_parse_json(
         if isinstance(json_str, str):
             json_str = json_str.replace("\t", "")
         elif isinstance(json_str, dict):
-            json_str = json.dumps(json_str)
+            return json_str
         return json.loads(json_str)
     except json.JSONDecodeError as _:  # noqa: F841
         try:
