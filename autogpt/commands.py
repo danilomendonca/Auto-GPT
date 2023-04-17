@@ -9,11 +9,14 @@ from autogpt.ai_functions import evaluate_code, improve_code, write_tests
 from autogpt.browse import scrape_links, scrape_text, summarize_text
 from autogpt.execute_code import execute_python_file, execute_shell
 from autogpt.file_operations import (
+    create_file,
+    write_to_file,
     append_to_file,
     delete_file,
     read_file,
     search_files,
-    write_to_file,
+    file_exists,
+    replace_in_file,
 )
 from autogpt.memory import get_memory
 from autogpt.speak import say_text
@@ -30,6 +33,43 @@ def is_valid_int(value) -> bool:
     except ValueError:
         return False
 
+
+def get_commands(response):
+    """Parse the response and return the command name and arguments"""
+    try:
+        response_json = fix_and_parse_json(response)
+
+        if "commands" not in response_json:
+            return "Error:", "Missing 'commands' object in JSON"
+
+        if not isinstance(response_json, dict):
+            return "Error:", f"'response_json' object is not dictionary {response_json}"
+
+        commands = response_json["commands"]
+        if not isinstance(commands, list):
+            return "Error:", "'commands' object is not a list"
+
+        parsed_commands = []
+        for command in commands:
+            if not isinstance(command, dict):
+                return "Error:", "'command' object is not a dictionary"
+
+            if "name" not in command:
+                return "Error:", "Missing 'name' field in 'command' object"
+
+            command_name = command["name"]
+
+            # Use an empty dictionary if 'args' field is not present in 'command' object
+            arguments = command.get("args", {})
+
+            parsed_commands.append((command_name, arguments))
+
+        return parsed_commands
+    except json.decoder.JSONDecodeError:
+        return "Error:", "Invalid JSON"
+    # All other errors, return "Error: + error message"
+    except Exception as e:
+        return "Error:", str(e)
 
 def get_command(response):
     """Parse the response and return the command name and arguments"""
@@ -76,14 +116,16 @@ def execute_command(command_name, arguments):
                 return google_official_search(arguments["input"])
             else:
                 return google_search(arguments["input"])
-        elif command_name == "memory_add":
-            return memory.add(arguments["string"])
+        elif command_name == "save_memory":
+            return memory.add(f"{arguments['key']}: {arguments['value']}")
+        elif command_name == "load_memory":
+            return memory.get(arguments['key'])
         elif command_name == "start_agent":
             return start_agent(
                 arguments["name"], arguments["task"], arguments["prompt"]
             )
-        elif command_name == "message_agent":
-            return message_agent(arguments["key"], arguments["message"])
+        elif command_name == "prompt_agent":
+            return prompt_agent(arguments["key"], arguments["prompt"])
         elif command_name == "list_agents":
             return list_agents()
         elif command_name == "delete_agent":
@@ -92,16 +134,24 @@ def execute_command(command_name, arguments):
             return get_text_summary(arguments["url"], arguments["question"])
         elif command_name == "get_hyperlinks":
             return get_hyperlinks(arguments["url"])
+        elif command_name == "create_file":
+            return create_file(arguments["file"])
         elif command_name == "read_file":
             return read_file(arguments["file"])
         elif command_name == "write_to_file":
             return write_to_file(arguments["file"], arguments["text"])
         elif command_name == "append_to_file":
             return append_to_file(arguments["file"], arguments["text"])
+        elif command_name == "replace_in_file":
+            return replace_in_file(
+                arguments["file"], arguments["text"], arguments["new_text"]
+            )
         elif command_name == "delete_file":
             return delete_file(arguments["file"])
         elif command_name == "search_files":
             return search_files(arguments["directory"])
+        elif command_name == "file_exists":
+            return file_exists(arguments["file"])
         elif command_name == "browse_website":
             return browse_website(arguments["url"], arguments["question"])
         # TODO: Change these to take in a file rather than pasted code, if
@@ -140,6 +190,24 @@ def execute_command(command_name, arguments):
     except Exception as e:
         return "Error: " + str(e)
 
+def cmd_response_needs_verification(command_name):
+    """Return True if the command requires verification"""
+    if command_name in [
+        "read_file",
+        "write_to_file",
+        "append_to_file",
+        "replace_in_file"
+        "delete_file",
+        "execute_shell",
+        "evaluate_code",
+        "improve_code",
+        "write_tests",
+        "execute_python_file",
+        "prompt_agent",
+    ]:
+        return True
+    else:
+        return False
 
 def get_datetime():
     """Return the current date and time"""
@@ -235,7 +303,7 @@ def start_agent(name, task, prompt, model=cfg.fast_llm_model):
     # Create agent
     if cfg.speak_mode:
         say_text(agent_intro, 1)
-    key, ack = agents.create_agent(task, first_message, model)
+    key, ack = agents.create_agent(name, task, first_message, model)
 
     if cfg.speak_mode:
         say_text(f"Hello {voice_name}. Your task is as follows. {task}.")
@@ -246,7 +314,7 @@ def start_agent(name, task, prompt, model=cfg.fast_llm_model):
     return f"Agent {name} created with key {key}. First response: {agent_response}"
 
 
-def message_agent(key, message):
+def prompt_agent(key, message):
     """Message an agent with a given key and message"""
     # Check if the key is a valid integer
     if is_valid_int(key):
@@ -265,7 +333,7 @@ def message_agent(key, message):
 
 def list_agents():
     """List all agents"""
-    return list_agents()
+    return agents.list_agents()
 
 
 def delete_agent(key):
