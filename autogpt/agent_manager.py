@@ -7,7 +7,7 @@ agents = {}  # key, (task, full_message_history, model)
 # TODO: Centralise use of create_chat_completion() to globally enforce token limit
 
 
-def create_agent(task, prompt, model):
+def create_agent(name, task, prompt, model):
     """Create a new agent and return its key"""
     global next_key
     global agents
@@ -30,7 +30,7 @@ def create_agent(task, prompt, model):
     # are deleted
     next_key += 1
 
-    agents[key] = (task, messages, model)
+    agents[key] = (name, task, messages, model)
 
     return key, agent_reply
 
@@ -45,19 +45,26 @@ def message_agent(key, message):
     """Send a message to an agent and return its response"""
     global agents
 
+    agent = None
+
     # Check if the key is a valid integer
     if is_valid_int(key):
         agent = agents[int(key)]
     # Check if the key is a valid string
     elif isinstance(key, str):
-        # TODO: find agent via task name
-        agent = next((agent for agent in agents.values() if agent[0] == key), None)
+        for agent_key, (name, task, _, _) in agents.items():
+            if name == key:
+                agent = agents[agent_key]
+                break
 
     if agent is None:
         return "AGENT NOT FOUND, PLEASE CREATE IT FIRST VIA start_agent"
 
-    task, messages, model = agent
+    if isinstance(message, dict):
+        # dump the dict to a string
+        message = str(message)
 
+    name, task, messages, model = agent
 
     # Add user message to message history before sending to agent
     messages.append({"role": "user", "content": message})
@@ -79,7 +86,7 @@ def list_agents():
     global agents
 
     # Return a list of agent keys and their tasks
-    return [(key, task) for key, (task, _, _) in agents.items()]
+    return [(key, task) for key, (name, task, _, _) in agents.items()]
 
 
 def delete_agent(key):
