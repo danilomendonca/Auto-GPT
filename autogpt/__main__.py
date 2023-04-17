@@ -452,6 +452,54 @@ class Agent:
         else:
             return False
 
+    def replace_arguments(self, command:str, arguments:str, last_command_response:str) -> dict:
+        """Replace the arguments in the command based on the previous command response."""
+
+        fixed_arguments_json = {}
+        try:
+            logger.debug("------------ Argument Replacement ---------------")
+            logger.debug(f"Command: {command}")
+            logger.debug(f"Template Arguments: {arguments}")
+            logger.debug(f"Last Command Response: {last_command_response}")
+            logger.debug("-----------")
+
+            # return arguments if no argument value is within <some text>
+            found = False
+            for (i, arg) in enumerate(arguments):
+                if "<" in arg:
+                    found = True
+                    break
+            if not found:
+                logger.debug(f"Arguments: {arguments}")
+                logger.debug("----------- End of Argument Replacement ----------------")
+                return arguments
+
+            # replace the <arg value> placeholders in the arguments with the appropriate values
+            function_string = "def replace_arguments(command:str, arguments:str, last_command_response:str) -> str:"
+            args = [f"'''{command}'''", f"'''{arguments}'''", f"'''{last_command_response}'''"]
+            description_string = (
+                "Given a command and its arguments (if any) formatted as JSON,"
+                "and the response from the last command,"
+                "replace <argument> occurences within arguments with the corresponding values from the last_command_response."
+                "Returns the new arguments as a parsable JSON string.\n"
+                "This is used to determine the arguments for the current command based on the previous command response."
+            )
+            result_string = call_ai_function(
+                function_string, args, description_string, model=cfg.fast_llm_model
+            )
+            result_string = result_string.replace("'''", "")
+            logger.debug(f"Arguments: {result_string}")
+            logger.debug("----------- End of Argument Replacement ----------------")
+
+            fixed_arguments_json = json.loads(result_string)
+
+        except (json.JSONDecodeError, ValueError) as e:
+            if cfg.debug_mode:
+                logger.error(f"Error: Invalid JSON arguments: %s\n", result_string)
+            logger.error("Error: Failed to replace JSON arguments.\n")
+            fixed_arguments_json = None
+
+        return fixed_arguments_json
 
     def start_interaction_loop(self):
         # Interaction Loop
@@ -510,6 +558,8 @@ class Agent:
                     # Get key press: Prompt the user to press enter to continue or escape
                     # to exit
                     self.user_input = ""
+                    if arguments != "" and last_command_response != "":
+                        arguments = self.replace_arguments(command_name, arguments, last_command_response)
                     logger.typewriter_log(
                         "NEXT ACTION: ",
                         Fore.CYAN,
