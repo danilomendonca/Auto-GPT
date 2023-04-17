@@ -89,6 +89,9 @@ def ingest_file(filename, memory, max_length=4000, overlap=200):
 
 def create_file(filename):
     """Create a file"""
+    if file_exists(filename):
+        return "Error: File already exists."
+
     try:
         filepath = safe_join(working_directory, filename)
         directory = os.path.dirname(filepath)
