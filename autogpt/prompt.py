@@ -45,11 +45,11 @@ def get_prompt() -> str:
     # Define the command list
     commands = [
         ("Google Search", "google", {"input": "<search>"}),
-        #(
-        #    "Browse Website",
-        #    "browse_website",
-        #    {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
-        #),
+        (
+            "Browse Website",
+            "browse_website",
+            {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
+        ),
         (
             "Start GPT Agent",
             "start_agent",
@@ -90,7 +90,7 @@ def get_prompt() -> str:
         #    {"command_line": "<command_line>"},
         #),
         ("Task Complete (Shutdown)", "task_complete", {"reason": "<reason>"}),
-        ("Generate Image", "generate_image", {"prompt": "<prompt>"})#,
+        ("Generate Image using AI", "generate_image", {"prompt": "<detailed image description>"})#,
         #("Do Nothing", "do_nothing", {}),
     ]
 
