@@ -1,6 +1,7 @@
 import io
 import os.path
 import uuid
+import re
 from base64 import b64decode
 
 import openai
@@ -15,7 +16,9 @@ working_directory = "auto_gpt_workspace"
 
 
 def generate_image(prompt):
-    filename = str(uuid.uuid4()) + ".jpg"
+    #filename = str(uuid.uuid4()) + ".jpg"
+    # sanitize prompt for file name using regex replace
+    filename = re.sub(r'[\/:*?"<>|]', '_', prompt.replace(" ", "_")) + ".jpg"
 
     # DALL-E
     if cfg.image_provider == "dalle":
