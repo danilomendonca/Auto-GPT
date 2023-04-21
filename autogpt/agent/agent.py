@@ -9,7 +9,7 @@ from autogpt.logs import logger, print_assistant_thoughts
 from autogpt.speech import say_text
 from autogpt.spinner import Spinner
 from autogpt.utils import clean_input
-
+from autogpt.llm_utils import call_ai_function
 
 class Agent:
     """Agent class for interacting with Auto-GPT.
@@ -109,10 +109,10 @@ class Agent:
             # Execute commands
             last_command_response = ""
 
-            for command in commands:
-                command_name, arguments = command
-
-                print(f"Executing command {command_name}")
+            for cmd_index, command in enumerate(commands):
+                command_name = command.get("name")
+                arguments = command.get("args")
+                print(f"Executing command {command_name} {cmd_index + 1} out of {len(commands)}")
 
                 if not cfg.continuous_mode and self.next_action_count == 0:
                     ### GET USER AUTHORIZATION TO EXECUTE COMMAND ###
