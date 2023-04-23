@@ -17,7 +17,7 @@ class AgentManager(metaclass=Singleton):
     # Create new GPT agent
     # TODO: Centralise use of create_chat_completion() to globally enforce token limit
 
-    def create_agent(self, task: str, prompt: str, model: str) -> tuple[int, str]:
+    def create_agent(self, name: str, task: str, prompt: str, model: str) -> tuple[int, str]:
         """Create a new agent and return its key
 
         Args:
@@ -46,7 +46,7 @@ class AgentManager(metaclass=Singleton):
         # are deleted
         self.next_key += 1
 
-        self.agents[key] = (task, messages, model)
+        self.agents[key] = (name, task, messages, model)
 
         return key, agent_reply
 
@@ -61,20 +61,22 @@ class AgentManager(metaclass=Singleton):
             The agent's response
         """
 
+        agent = None
+
         # Check if the key is a valid integer
-        if is_valid_int(key):
-            agent = agents[int(key)]
+        if self.is_valid_int(key):
+            agent = self.agents[int(key)]
         # Check if the key is a valid string
         elif isinstance(key, str):
-            for agent_key, (name, task, _, _) in agents.items():
+            for agent_key, (name, task, _, _) in self.agents.items():
                 if name == key:
-                    agent = agents[agent_key]
+                    agent = self.agents[agent_key]
                     break
 
         if agent is None:
             return "AGENT NOT FOUND, PLEASE CREATE IT FIRST VIA start_agent"
 
-        name, task, messages, model = self.agents[int(key)]
+        name, task, messages, model = agent
 
         # Add user message to message history before sending to agent
         messages.append({"role": "user", "content": message})
@@ -116,7 +118,7 @@ class AgentManager(metaclass=Singleton):
         except KeyError:
             return False
 
-    def is_valid_int(value):
+    def is_valid_int(self, value):
         try:
             int(value)
             return True
