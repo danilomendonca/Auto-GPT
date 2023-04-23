@@ -5,7 +5,7 @@ from autogpt.chat import chat_with_ai, create_chat_message
 from autogpt.config import Config
 from autogpt.json_utils.json_fix_llm import fix_json_using_multiple_techniques
 from autogpt.json_utils.utilities import validate_json
-from autogpt.logs import logger, print_assistant_thoughts
+from autogpt.logs import logger, print_assistant_thoughts, print_assistant_commands
 from autogpt.speech import say_text
 from autogpt.spinner import Spinner
 from autogpt.utils import clean_input
@@ -90,6 +90,7 @@ class Agent:
                 # Get command name and arguments
                 try:
                     print_assistant_thoughts(self.ai_name, assistant_reply_json)
+                    print_assistant_commands(self.ai_name, assistant_reply_json)
                     # command_name, arguments = get_command(assistant_reply_json)
                     commands = get_commands(
                         assistant_reply
@@ -108,6 +109,7 @@ class Agent:
 
             # Execute commands
             last_command_response = ""
+            command_results = []
 
             for cmd_index, command in enumerate(commands):
                 command_name = command.get("name")
@@ -210,30 +212,24 @@ class Agent:
                     logger.typewriter_log(
                         "COMMAND EXECUTION SUCCESS", Fore.GREEN, ""
                     )
-                    self.user_input = "COMMANDS EXECUTED! GENERATE NEXT JSON RESPONSE"
+                    self.user_input = "ALL COMMANDS EXECUTED!"
                 else:
                     logger.typewriter_log(
                         "COMMAND EXECUTION FAILURE", Fore.RED, ""
                     )
-                    self.user_input = f"THE {command_name} COMMAND FAILED. GENERATE NEXT JSON RESPONSE."
-
-                memory_to_add = (
-                    f"Assistant Reply: {assistant_reply} "
-                    f"\nResult: {result} "
-                    f"\nHuman Feedback: {user_input} "
-                )
-
-                self.memory.add(memory_to_add)
+                    self.user_input = f"THE {command_name} COMMAND FAILED, ABORTING PLAN."
 
                 # Check if there's a result from the command append it to the message
                 # history
                 if result is not None:
-                    self.full_message_history.append(create_chat_message("system", result))
+                    #self.full_message_history.append(create_chat_message("system", result))
+                    command_results.append(result)
                     logger.typewriter_log("SYSTEM: ", Fore.YELLOW, result)
                 else:
-                    self.full_message_history.append(
-                        create_chat_message("system", "Unable to execute command")
-                    )
+                    #self.full_message_history.append(
+                    #    create_chat_message("system", "Unable to execute command")
+                    #)
+                    command_results.append("Unable to execute command")
                     logger.typewriter_log(
                         "SYSTEM: ", Fore.YELLOW, "Unable to execute command"
                     )
@@ -241,6 +237,14 @@ class Agent:
                 if not command_successful:
                     break
 
+            self.full_message_history.append(create_chat_message("system", str(command_results)))
+            self.full_message_history.append(create_chat_message("system", self.user_input))
+            memory_to_add = (
+                f"Assistant Reply: {assistant_reply} "
+                f"\nResult: {result} "
+                f"\nHuman Feedback: {user_input} "
+            )
+            self.memory.add(memory_to_add)
     def replace_arguments(self, command:str, arguments:str, last_command_response:str) -> dict:
         """Replace the arguments in the command based on the previous command response."""
 
