@@ -93,6 +93,12 @@ def summarize_text(
     model = CFG.fast_llm_model
     text_length = len(text)
     print(f"Text length: {text_length} characters")
+    used_tokens = token_counter.count_message_tokens([{'role': 'user', 'message': text}], model)
+    if used_tokens > CFG.fast_token_limit:
+        while used_tokens > CFG.fast_token_limit:
+            text = text[0:-100]
+            used_tokens = token_counter.count_message_tokens([{'role': 'user', 'message': text}], model)
+        print(f"Text length exceeds {CFG.fast_token_limit} token limit, truncating to {len(text)} characters")
 
     summaries = []
     chunks = list(
