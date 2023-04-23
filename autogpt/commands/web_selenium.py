@@ -35,16 +35,21 @@ def browse_website(url: str, question: str) -> tuple[str, WebDriver]:
     Returns:
         Tuple[str, WebDriver]: The answer and links to the user and the webdriver
     """
-    driver, text = scrape_text_with_selenium(url)
-    add_header(driver)
-    summary_text = summary.summarize_text(url, text, question, driver)
-    links = scrape_links_with_selenium(driver, url)
+    driver = None
+    try:
+        driver, text = scrape_text_with_selenium(url)
+        add_header(driver)
+        summary_text = summary.summarize_text(url, text, question, driver)
+        links = scrape_links_with_selenium(driver, url)
 
-    # Limit links to 5
-    if len(links) > 5:
-        links = links[:5]
-    close_browser(driver)
-    return f"Answer gathered from website: {summary_text} \n \n Links: {links}", driver
+        # Limit links to 5
+        if len(links) > 5:
+            links = links[:5]
+        close_browser(driver)
+        return f"Answer gathered from website: {summary_text} \n \n Links: {links}"#, driver
+    except Exception as e:
+        close_browser(driver) if driver else None
+        return f"Error: {e.__class__.__name__} while browsing website"
 
 
 def scrape_text_with_selenium(url: str) -> tuple[WebDriver, str]:
