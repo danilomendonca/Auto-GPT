@@ -266,24 +266,40 @@ def download_file(url, filename):
     except Exception as e:
         return "Error: " + str(e)
 
-def create_file(filename):
-    """Create a file"""
-    if file_exists(filename):
-        return "Error: File already exists."
+def create_file(filename: str) -> str:
+    """Create a file
 
+    Args:
+        filename (str): The name of the file to write to
+
+    Returns:
+        str: A message indicating success or failure
+    """
+    if check_duplicate_operation("create", filename):
+        return "Error: File has already been created."
     try:
-        filepath = safe_join(working_directory, filename)
+        filepath = path_in_workspace(filename)
         directory = os.path.dirname(filepath)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        with open(filepath, "w"):
+        with open(filepath, "w", encoding="utf-8") as f:
             pass
+        log_operation("create", filename)
         return "File created successfully."
     except Exception as e:
-        return "Error: " + str(e)
+        return f"Error: {str(e)}"
 
-def replace_in_file(filename, text, replacement):
-    """Replace text in a file"""
+def replace_in_file(filename: str, text: str, replacement: str) -> str:
+    """Replace text in a file
+
+        Args:
+        filename (str): Filename to save the file as
+        text (str): text to be replaced
+        replacement (str): replacement text
+
+    Returns:
+        str: A message indicating success or failure
+    """
     if not isinstance(text, str):
             return "Error: Text to replace must be a string."
     if not isinstance(replacement, str):
@@ -292,7 +308,7 @@ def replace_in_file(filename, text, replacement):
         return "Error: Text to replace must not be empty."
 
     try:
-        filepath = safe_join(working_directory, filename)
+        filepath = path_in_workspace(filename)
         with open(filepath, "r") as f:
             content = f.read()
         content = content.replace(text, replacement)
@@ -302,10 +318,18 @@ def replace_in_file(filename, text, replacement):
     except Exception as e:
         return "Error: " + str(e)
 
-def file_exists(filename) -> bool:
-    """Check if a file exists"""
+def file_exists(filename: str) -> str:
+    """Check if a file exists
+
+        Args:
+        filename (str): Filename to save the file as
+
+    Returns:
+        str: A message indicating success or failure
+    """
     try:
-        filepath = safe_join(working_directory, filename)
-        return os.path.exists(filepath)
+        filepath = path_in_workspace(filename)
+        return os.path.exists(filepath) and os.path.isfile(filepath) and "File exists." or "File does not exist."
     except Exception as e:
-        return False
+        return "File does not exist."
+
