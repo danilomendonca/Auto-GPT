@@ -110,6 +110,14 @@ class Logger(metaclass=Singleton):
     ):
         self._log(title, title_color, message, logging.WARN)
 
+    def info(
+        self,
+        message,
+        title="",
+        title_color="",
+    ):
+        self._log(title, title_color, message, logging.INFO)
+
     def error(self, title, message=""):
         self._log(title, Fore.RED, message, logging.ERROR)
 
@@ -330,3 +338,12 @@ def print_assistant_thoughts(
     # Speak the assistant's thoughts
     if CFG.speak_mode and assistant_thoughts_speak:
         say_text(assistant_thoughts_speak)
+
+def print_assistant_commands(
+    ai_name: object, assistant_reply_json_valid: object
+) -> None:
+    assistant_commands = assistant_reply_json_valid.get("commands", [])
+    if assistant_commands:
+        logger.typewriter_log("COMMANDS:", Fore.YELLOW, "")
+        for command in assistant_commands:
+            logger.typewriter_log("- ", Fore.GREEN, command.get("name") + " " + str(command.get("args", {})))
