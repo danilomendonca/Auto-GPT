@@ -77,7 +77,7 @@ class Agent:
                     self.triggering_prompt,
                     self.full_message_history,
                     self.memory,
-                    cfg.fast_token_limit,
+                    cfg.smart_token_limit,
                 )  # TODO: This hardcodes the model to use GPT3.5. Make this an argument
 
             assistant_reply_json = fix_json_using_multiple_techniques(assistant_reply)
@@ -245,6 +245,8 @@ class Agent:
                 f"\nHuman Feedback: {user_input} "
             )
             self.memory.add(memory_to_add)
+
+
     def replace_arguments(self, command:str, arguments:str, last_command_response:str) -> dict:
         """Replace the arguments in the command based on the previous command response."""
 

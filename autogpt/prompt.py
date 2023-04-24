@@ -51,7 +51,7 @@ def get_prompt() -> str:
         'GPT agents have no accesss to google or internet browsing'
     )
     prompt_generator.add_constraint(
-        'Do not include commands whose argument values are not yet known from past events'
+        'Do not include commands whose argument values depend on the output of other commands in the commands list'
     )
     prompt_generator.add_constraint(
         'Do not include //comments into the JSON response'
@@ -76,51 +76,51 @@ def get_prompt() -> str:
     commands = [
         ("Google Search", "google", {"input": "<search>"}),
         (
-            "Browse Website",
-            "browse_website",
-            {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
-        ),
-        (
             "Start GPT Agent",
             "start_agent",
             {"name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"},
         ),
+        ("List GPT Agents", "list_agents", {}),
         (
-            "Prompt GPT Agent",
-            "prompt_agent",
+            "Ask existing GPT Agent",
+            "ask_agent",
             {"key": "<key>", "prompt": "<prompt>"},
         ),
-        #("Save memory", "save_memory", {"key": "<key>", "value": "<value>"}),
-        #("Load memory", "load_memory", {"key": "<key>"}),
-        ("List GPT Agents", "list_agents", {}),
+        #(
+        #    "Browse Website",
+        #    "browse_website",
+        #    {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
+        #),
+        #("Save to nosql db", "save_to_db", {"key": "<key>", "value": "<value>"}),
+        #("Fetch from nosql db", "load_from_db", {"key": "<key>"}),
         ("Delete GPT Agent", "delete_agent", {"key": "<key>"}),
         ("Create file", "create_file", {"file": "<file>"}),
-        (
-            "Clone Repository",
-            "clone_repository",
-            {"repository_url": "<url>", "clone_path": "<directory>"},
-        ),
+        #(
+        #    "Clone Repository",
+        #    "clone_repository",
+        #    {"repository_url": "<url>", "clone_path": "<directory>"},
+        #),
         #("Write to file", "write_to_file", {"file": "<file>", "text": "<text>"}),
         ("Read file", "read_file", {"file": "<file>"}),
         ("Delete file", "delete_file", {"file": "<file>"}),
         #("File exists", "file_exists", {"file": "<file>"}),
         ("Append to file", "append_to_file", {"file": "<file>", "text": "<text>"}),
-        ("Replace text in file", "replace_in_file", {"file": "<file>", "text": "<text>", "new_text": "<new_text>"}),
+        #("Replace text in file", "replace_in_file", {"file": "<file>", "text": "<text>", "new_text": "<new_text>"}),
         ("Search Files", "search_files", {"directory": "<directory>"}),
         #("Analyze Code", "analyze_code", {"code": "<full_code_string>"}),
-        (
-            "Get Improved Code",
-            "improve_code",
-            {"suggestions": "<list_of_suggestions>", "code": "<full_code_string>"},
-        ),
-        (
-            "Write Tests",
-            "write_tests",
-            {"code": "<full_code_string>", "focus": "<list_of_focus_areas>"},
-        ),
-        ("Execute Python File", "execute_python_file", {"file": "<file>"}),
-        ("Generate Image", "generate_image", {"prompt": "<prompt>"}),
-        ("Send Tweet", "send_tweet", {"text": "<text>"}),
+        #(
+        #    "Get Improved Code",
+        #    "improve_code",
+        #    {"suggestions": "<list_of_suggestions>", "code": "<full_code_string>"},
+        #),
+        #(
+        #    "Write Tests",
+        #    "write_tests",
+        #    {"code": "<full_code_string>", "focus": "<list_of_focus_areas>"},
+        #),
+        #("Execute Python File", "execute_python_file", {"file": "<file>"}),
+        #("Generate Image", "generate_image", {"prompt": "<prompt>"}),
+        #("Send Tweet", "send_tweet", {"text": "<text>"}),
     ]
 
     # Only add the audio to text command if the model is specified
@@ -157,9 +157,9 @@ def get_prompt() -> str:
         )
 
     # Add these command last.
-    commands.append(
-        ("Do Nothing", "do_nothing", {}),
-    )
+    #commands.append(
+    #    ("Do Nothing", "do_nothing", {}),
+    #)
     commands.append(
         ("Task Complete (Shutdown)", "task_complete", {"reason": "<reason>"}),
     )
