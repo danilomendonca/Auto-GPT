@@ -23,7 +23,7 @@ class Agent:
         Currently, the dynamic and customizable information in the system prompt are ai_name, description and goals.
 
         triggering_prompt: The last sentence the AI will see before answering. For Auto-GPT, this prompt is:
-            Determine which next command to use, and respond using the format specified above:
+            Determine which next commands to use, and respond using the format specified above:
             The triggering prompt is not part of the system prompt because between the system prompt and the triggering
             prompt we have contextual information that can distract the AI and make it forget that its goal is to find the next task to achieve.
             SYSTEM PROMPT
@@ -102,7 +102,7 @@ class Agent:
                     logger.error("Error: \n", str(e))
 
             # avoid too many values to unpack (expected 2) error
-            if commands is None or len(commands) == 0 or len(commands[0]) != 2:
+            if commands is None or len(commands) == 0 or len(commands[0]) != 3:
                 logger.typewriter_log("No commands found in response.")
                 self.user_input = "NOT GOOD: THE \"commands\" LIST IS EMPTY. GENERATE A JSON RESPONSE WITH COMMANDS."
                 continue

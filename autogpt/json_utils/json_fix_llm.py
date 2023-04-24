@@ -21,15 +21,16 @@ JSON_SCHEMA = """
         "name": "command name",
         "args": {
             "arg name": "value"
-        }
+        },
+        "depends": "\"true\" the command depends on the output of another command in the commands list, \"false\" otherwise"
     }],
     "thoughts":
     {
         "text": "thought",
         "reasoning": "reasoning",
         "plan": "- short bulleted\n- list that conveys\n- long-term plan",
-        "criticism": "constructive self-criticism",
-        "speak": "thoughts summary to say to user"
+        "progress": "progress summary towards the agent goals",
+        "criticism": "constructive self-criticism"
     }
 }
 """

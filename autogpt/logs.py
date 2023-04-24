@@ -244,6 +244,7 @@ def print_assistant_thoughts(ai_name, assistant_reply):
 
         assistant_thoughts_reasoning = None
         assistant_thoughts_plan = None
+        assistant_thoughts_progress = None
         assistant_thoughts_speak = None
         assistant_thoughts_criticism = None
         if not isinstance(assistant_reply_json, dict):
@@ -254,6 +255,7 @@ def print_assistant_thoughts(ai_name, assistant_reply):
         if assistant_thoughts:
             assistant_thoughts_reasoning = assistant_thoughts.get("reasoning")
             assistant_thoughts_plan = assistant_thoughts.get("plan")
+            assistant_thoughts_progress = assistant_thoughts.get("progress")
             assistant_thoughts_criticism = assistant_thoughts.get("criticism")
             assistant_thoughts_speak = assistant_thoughts.get("speak")
 
@@ -274,6 +276,19 @@ def print_assistant_thoughts(ai_name, assistant_reply):
 
             # Split the input_string using the newline character and dashes
             lines = assistant_thoughts_plan.split("\n")
+            for line in lines:
+                line = line.lstrip("- ")
+                logger.typewriter_log("- ", Fore.GREEN, line.strip())
+
+            logger.typewriter_log("PROGRESS:", Fore.YELLOW, "")
+            # If it's a list, join it into a string
+            if isinstance(assistant_thoughts_progress, list):
+                assistant_thoughts_progress = "\n".join(assistant_thoughts_progress)
+            elif isinstance(assistant_thoughts_progress, dict):
+                assistant_thoughts_progress = str(assistant_thoughts_progress)
+
+            # Split the input_string using the newline character and dashes
+            lines = assistant_thoughts_progress.split("\n")
             for line in lines:
                 line = line.lstrip("- ")
                 logger.typewriter_log("- ", Fore.GREEN, line.strip())
@@ -307,6 +322,7 @@ def print_assistant_thoughts(
 ) -> None:
     assistant_thoughts_reasoning = None
     assistant_thoughts_plan = None
+    assistant_thoughts_progress = None
     assistant_thoughts_speak = None
     assistant_thoughts_criticism = None
 
@@ -315,6 +331,7 @@ def print_assistant_thoughts(
     if assistant_thoughts:
         assistant_thoughts_reasoning = assistant_thoughts.get("reasoning")
         assistant_thoughts_plan = assistant_thoughts.get("plan")
+        assistant_thoughts_progress = assistant_thoughts.get("progress")
         assistant_thoughts_criticism = assistant_thoughts.get("criticism")
         assistant_thoughts_speak = assistant_thoughts.get("speak")
     logger.typewriter_log(
@@ -334,6 +351,20 @@ def print_assistant_thoughts(
         for line in lines:
             line = line.lstrip("- ")
             logger.typewriter_log("- ", Fore.GREEN, line.strip())
+
+        logger.typewriter_log("PROGRESS:", Fore.YELLOW, "")
+        # If it's a list, join it into a string
+        if isinstance(assistant_thoughts_progress, list):
+            assistant_thoughts_progress = "\n".join(assistant_thoughts_progress)
+        elif isinstance(assistant_thoughts_progress, dict):
+            assistant_thoughts_progress = str(assistant_thoughts_progress)
+
+        # Split the input_string using the newline character and dashes
+        lines = assistant_thoughts_progress.split("\n")
+        for line in lines:
+            line = line.lstrip("- ")
+            logger.typewriter_log("- ", Fore.GREEN, line.strip())
+
     logger.typewriter_log("CRITICISM:", Fore.YELLOW, f"{assistant_thoughts_criticism}")
     # Speak the assistant's thoughts
     if CFG.speak_mode and assistant_thoughts_speak:

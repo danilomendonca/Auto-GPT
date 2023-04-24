@@ -24,11 +24,15 @@
                     },
                     "args": {
                         "type": "object"
+                    },
+                    "depends": {
+                        "type": "string"
                     }
                 },
                 "required": [
                     "name",
-                    "args"
+                    "args",
+                    "depends"
                 ],
                 "additionalProperties": false
             }

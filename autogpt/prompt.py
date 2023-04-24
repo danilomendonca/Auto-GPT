@@ -43,9 +43,22 @@ def get_prompt() -> str:
         "Use subprocesses for commands that will not terminate within a few minutes"
     )
 
+    # Improvements
     prompt_generator.add_constraint(
-        'Always include at least one command in the commands list'
+        'GPT agents have no accesss to local files or folders'
     )
+    prompt_generator.add_constraint(
+        'GPT agents have no accesss to google or internet browsing'
+    )
+    prompt_generator.add_constraint(
+        'Do not include commands whose argument values are not yet known from past events'
+    )
+    prompt_generator.add_constraint(
+        'Do not include //comments into the JSON response'
+    )
+    #prompt_generator.add_constraint(
+    #    'Always include at least one command in the "commands" list'
+    #)
     #prompt_generator.add_constraint(
     #    'Command arguments must be in valid JSON format e.g. {"arg_name": "arg_value"}'
     #)

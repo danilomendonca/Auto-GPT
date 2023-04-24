@@ -130,7 +130,7 @@ def main(
         next_action_count = 0
         # Make a constant:
         triggering_prompt = (
-            "Determine which next command to use, and respond using the"
+            "Determine which next commands to use, and respond using the"
             " format specified above:"
         )
         # Initialize memory and make sure it is empty.
