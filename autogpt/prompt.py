@@ -86,11 +86,11 @@ def get_prompt() -> str:
             "ask_agent",
             {"key": "<key>", "prompt": "<prompt>"},
         ),
-        #(
-        #    "Browse Website",
-        #    "browse_website",
-        #    {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
-        #),
+        (
+            "Browse Website",
+            "browse_website",
+            {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
+        ),
         #("Save to nosql db", "save_to_db", {"key": "<key>", "value": "<value>"}),
         #("Fetch from nosql db", "load_from_db", {"key": "<key>"}),
         ("Delete GPT Agent", "delete_agent", {"key": "<key>"}),
