@@ -81,7 +81,7 @@ def chat_with_ai(
 
             relevant_memory = (
                 []
-                if len(full_message_history) <= 2
+                if len(full_message_history) <= 3
                 else full_message_history[0:(len(full_message_history) - 2)]
             )
 
@@ -110,7 +110,7 @@ def chat_with_ai(
             )  # Account for user input (appended later)
 
             added_count = 0
-            while next_message_to_add_index >= 0 and added_count < 2:
+            while next_message_to_add_index >= 0 and added_count < 3:
                 # print (f"CURRENT TOKENS USED: {current_tokens_used}")
                 message_to_add = full_message_history[next_message_to_add_index]
                 logger.debug(f"Adding message: {message_to_add}")
