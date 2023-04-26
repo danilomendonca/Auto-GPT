@@ -82,7 +82,7 @@ def chat_with_ai(
             relevant_memory = (
                 []
                 if len(full_message_history) <= 3
-                else full_message_history[0:(len(full_message_history) - 2)]
+                else full_message_history[0:(len(full_message_history) - 3)]
             )
 
             (
