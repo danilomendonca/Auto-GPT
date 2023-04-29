@@ -65,7 +65,10 @@ class AgentManager(metaclass=Singleton):
 
         # Check if the key is a valid integer
         if self.is_valid_int(key):
-            agent = self.agents[int(key)]
+            if int(key) in self.agents:
+                agent = self.agents[int(key)]
+            else:
+                return "AGENT NOT FOUND, PLEASE CREATE IT FIRST VIA start_agent"
         # Check if the key is a valid string
         elif isinstance(key, str):
             for agent_key, (name, task, _, _) in self.agents.items():
