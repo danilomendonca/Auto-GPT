@@ -11,7 +11,7 @@ from autogpt.utils import clean_input
 CFG = Config()
 
 
-def get_prompt() -> str:
+def get_sub_agent_prompt() -> str:
     """
     This function generates a prompt string that includes various constraints,
         commands, resources, and performance evaluations.
@@ -44,12 +44,12 @@ def get_prompt() -> str:
     )
 
     # Improvements
-    prompt_generator.add_constraint(
-        'Sub-agents have no accesss to local files or folders'
-    )
-    prompt_generator.add_constraint(
-        'Sub-agents have no accesss to google or internet browsing'
-    )
+    #prompt_generator.add_constraint(
+    #    'GPT agents have no accesss to local files or folders'
+    #)
+    #prompt_generator.add_constraint(
+    #    'GPT agents have no accesss to google or internet browsing'
+    #)
     prompt_generator.add_constraint(
         'Do not include commands whose argument values depend on the output of other commands in the commands list'
     )
@@ -57,7 +57,7 @@ def get_prompt() -> str:
         'Do not include //comments into the JSON response'
     )
     prompt_generator.add_constraint(
-        'Be specific with sub-agent goals. Specify what they should respond with.'
+        'Include all relevant information in the final complete response once the goal has been achieved'
     )
     #prompt_generator.add_constraint(
     #    'Always include at least one command in the "commands" list'
@@ -77,44 +77,39 @@ def get_prompt() -> str:
 
     # Define the command list
     commands = [
-        #("Google Search", "google", {"input": "<search>"}),
-        #(
-        #    "Start GPT Agent",
-        #    "start_agent",
-        #    {"name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"},
-        #),
+        ("Google Search", "google", {"input": "<search>"}),
         (
-            "Start Sub-Agent",
-            "start_sub_agent",
-            {"name": "<name>", "role": "<role>", "goal": "<short_goal_desc>", "input": "<context or input needed for goal>", "respond_with": "<the sub agent final response specification>"},
+            "Start GPT Agent",
+            "start_agent",
+            {"name": "<name>", "task": "<short_task_desc>"},
         ),
-        #("List GPT Agents", "list_agents", {}),
-        #(
-        #    "Ask existing Sub-Agent",
-        #    "ask_agent",
-        #    {"key": "<key>", "prompt": "<prompt>"},
-        #),
+        ("List GPT Agents", "list_agents", {}),
+        (
+            "Ask existing GPT Agent",
+            "ask_agent",
+            {"key": "<key>", "prompt": "<prompt>"},
+        ),
         #(
         #    "Browse Website",
         #    "browse_website",
         #    {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
         #),
-        #("Save to memory", "save_to_mem", {"key": "<key>", "value": "<value>"}),
-        #("Load from memory", "load_from_mem", {"key": "<key>"}),
+        #("Save to nosql db", "save_to_db", {"key": "<key>", "value": "<value>"}),
+        #("Fetch from nosql db", "load_from_db", {"key": "<key>"}),
         #("Delete GPT Agent", "delete_agent", {"key": "<key>"}),
-        ("Create file", "create_file", {"file": "<file>"}),
+        #("Create file", "create_file", {"file": "<file>"}),
         #(
         #    "Clone Repository",
         #    "clone_repository",
         #    {"repository_url": "<url>", "clone_path": "<directory>"},
         #),
         #("Write to file", "write_to_file", {"file": "<file>", "text": "<text>"}),
-        ("Read file", "read_file", {"file": "<file>"}),
-        ("Delete file", "delete_file", {"file": "<file>"}),
+        #("Read file", "read_file", {"file": "<file>"}),
+        #("Delete file", "delete_file", {"file": "<file>"}),
         #("File exists", "file_exists", {"file": "<file>"}),
-        ("Append to file", "append_to_file", {"file": "<file>", "text": "<text>"}),
-        ("Replace text in file", "replace_in_file", {"file": "<file>", "text": "<non empty text>", "new_text": "<new_text>"}),
-        ("Search Files", "search_files", {"directory": "<directory>"}),
+        #("Append to file", "append_to_file", {"file": "<file>", "text": "<text>"}),
+        #("Replace text in file", "replace_in_file", {"file": "<file>", "text": "<text>", "new_text": "<new_text>"}),
+        #("Search Files", "search_files", {"directory": "<directory>"}),
         #("Analyze Code", "analyze_code", {"code": "<full_code_string>"}),
         #(
         #    "Get Improved Code",
@@ -169,7 +164,10 @@ def get_prompt() -> str:
     #    ("Do Nothing", "do_nothing", {}),
     #)
     commands.append(
-        ("Task Complete (Shutdown)", "task_complete", {"reason": "<reason>"}),
+        ("Send final complete response", "send_response", {"response": "<agent final complete response>"}),
+    )
+    commands.append(
+        ("Abort execution", "abort", {"reason": "<reason for aborting>"}),
     )
 
     # Add commands to the PromptGenerator object
@@ -184,7 +182,7 @@ def get_prompt() -> str:
     #prompt_generator.add_resource(
     #    "GPT-3.5 powered Agents for delegation of simple tasks."
     #)
-    prompt_generator.add_resource("File output.")
+    #prompt_generator.add_resource("File output.")
 
     # Add performance evaluations to the PromptGenerator object
     prompt_generator.add_performance_evaluation(

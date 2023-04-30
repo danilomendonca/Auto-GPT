@@ -202,10 +202,14 @@ class Agent:
                 elif command_name == "human_feedback":
                     result = f"Human feedback: {user_input}"
                     command_successful = True
+                elif command_name == "send_response":
+                    return arguments.get("response")
+                elif command_name == "abort":
+                    return f"Aborting. Reason: {arguments.get('reason')}"
                 else:
                     result = (
                         f"Command {command_name} returned: "
-                        f"{execute_command(command_name, arguments)}"
+                        f"{self.execute_main_command(command_name, arguments)}"
                     )
                     if self.next_action_count > 0:
                         self.next_action_count -= 1
@@ -257,6 +261,94 @@ class Agent:
             )
             self.memory.add(memory_to_add)
 
+    def execute_main_command(self, command_name: str, arguments: dict):
+        """Executes a command and returns the result."""
+        if command_name == "start_sub_agent":
+            name = arguments.get("name")
+            role = arguments.get("role")
+            goal = arguments.get("goal")
+            respond_with = arguments.get("respond_with")
+            start_input = arguments.get("input") or None
+            return self.start_sub_agent(
+                name,
+                role,
+                [goal, f"You must respond with {respond_with}"],
+                start_input
+            )
+        else:
+            return execute_command(command_name, arguments)
+
+    def start_sub_agent(
+        self,
+        ai_name,
+        ai_role,
+        ai_goals,
+        start_input) -> None:
+        """Starts a sub-agent along with its iteraction loop."""
+
+        from autogpt.memory import get_memory
+
+        cfg = Config()
+        sub_prompt = self.construct_sub_prompt(
+            ai_name, ai_role, ai_goals
+        )
+        # Initialize variables
+        full_message_history = []
+        if start_input is not None:
+            full_message_history.append(create_chat_message("user", start_input))
+        next_action_count = 0
+        # Make a constant:
+        triggering_prompt = (
+            "Determine which next commands to use, and respond using the"
+            " format specified above:"
+        )
+        # Initialize memory and make sure it is empty.
+        # this is particularly important for indexing and referencing pinecone memory
+        memory = get_memory(cfg, init=True)
+        logger.typewriter_log(
+            "Using memory of type:", Fore.GREEN, f"{memory.__class__.__name__}"
+        )
+        logger.typewriter_log("Using Browser:", Fore.GREEN, cfg.selenium_web_browser)
+        sub_agent = Agent(
+            ai_name=ai_name,
+            memory=memory,
+            full_message_history=full_message_history,
+            next_action_count=next_action_count,
+            system_prompt=sub_prompt,
+            triggering_prompt=triggering_prompt,
+        )
+        return sub_agent.start_interaction_loop()
+
+    def construct_sub_prompt(self, ai_name: str, ai_role: str, ai_goals: list) -> str:
+        """
+        Returns a prompt to the user with the class information in an organized fashion.
+
+        Parameters:
+            None
+
+        Returns:
+            sub_prompt (str): A string containing the initial prompt for the user
+              including the ai_name, ai_role and ai_goals.
+        """
+
+        prompt_start = (
+            "Your decisions must always be made independently without"
+            " seeking user assistance. Play to your strengths as an LLM and pursue"
+            " simple strategies with no legal complications."
+            ""
+        )
+
+        from autogpt.prompt_sub_agent import get_sub_agent_prompt
+
+        # Construct full prompt
+        sub_prompt = (
+            f"You are {ai_name}, {ai_role}\n{prompt_start}\n\nGOALS:\n\n"
+        )
+        for i, goal in enumerate(ai_goals):
+            sub_prompt += f"{i+1}. {goal}\n"
+
+        sub_prompt += f"\n\n{get_sub_agent_prompt()}"
+        return sub_prompt
 
     def replace_arguments(self, command:str, arguments:str, last_command_response:str) -> dict:
         """Replace the arguments in the command based on the previous command response."""
