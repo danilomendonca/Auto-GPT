@@ -202,7 +202,7 @@ class Agent:
                 elif command_name == "human_feedback":
                     result = f"Human feedback: {user_input}"
                     command_successful = True
-                elif command_name == "send_response":
+                elif command_name == "send_final_response":
                     return arguments.get("response")
                 elif command_name == "abort":
                     return f"Aborting. Reason: {arguments.get('reason')}"

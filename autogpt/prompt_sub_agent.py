@@ -56,6 +56,7 @@ def get_sub_agent_prompt() -> str:
     prompt_generator.add_constraint(
         'Do not include //comments into the JSON response'
     )
+    # Sub-agents
     prompt_generator.add_constraint(
         'Include all relevant information in the final complete response once the goal has been achieved'
     )
@@ -164,7 +165,7 @@ def get_sub_agent_prompt() -> str:
     #    ("Do Nothing", "do_nothing", {}),
     #)
     commands.append(
-        ("Send final complete response", "send_response", {"response": "<agent final complete response>"}),
+        ("Send final complete response", "send_final_response", {"response": "<agent final complete response>"}),
     )
     commands.append(
         ("Abort execution", "abort", {"reason": "<reason for aborting>"}),

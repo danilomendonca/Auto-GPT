@@ -56,6 +56,10 @@ def get_prompt() -> str:
     prompt_generator.add_constraint(
         'Do not include //comments into the JSON response'
     )
+    # Sub-agents
+    prompt_generator.add_constraint(
+        'Sub-agents have no memory of previous conversations. Send any relevant information in the "input" field.'
+    )
     prompt_generator.add_constraint(
         'Be specific with sub-agent goals. Specify what they should respond with.'
     )
