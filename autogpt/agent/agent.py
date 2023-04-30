@@ -237,22 +237,22 @@ class Agent:
                 # Check if there's a result from the command append it to the message
                 # history
                 if result is not None:
-                    #self.full_message_history.append(create_chat_message("system", result))
+                    self.full_message_history.append(create_chat_message("system", result))
                     command_results.append(result)
                     logger.typewriter_log("SYSTEM: ", Fore.YELLOW, result)
                 else:
-                    #self.full_message_history.append(
-                    #    create_chat_message("system", "Unable to execute command")
-                    #)
-                    command_results.append("Unable to execute command")
+                    self.full_message_history.append(
+                        create_chat_message("system", f"Unable to execute {command_name}")
+                    )
+                    command_results.append(f"Unable to execute {command_name}")
                     logger.typewriter_log(
-                        "SYSTEM: ", Fore.YELLOW, "Unable to execute command"
+                        "SYSTEM: ", Fore.YELLOW, f"Unable to execute {command_name}"
                     )
 
                 if not command_successful:
                     break
 
-            self.full_message_history.append(create_chat_message("system", str(command_results)))
+            #self.full_message_history.append(create_chat_message("system", str(command_results)))
             self.full_message_history.append(create_chat_message("system", self.user_input))
             memory_to_add = (
                 f"Assistant Reply: {assistant_reply} "
