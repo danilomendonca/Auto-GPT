@@ -110,7 +110,7 @@ def fix_json_using_multiple_techniques(assistant_reply: str) -> Dict[Any, Any]:
     if CFG.speak_mode:
         say_text("I have received an invalid JSON response from the OpenAI API.")
 
-    return {}
+    return None
 
 
 def fix_and_parse_json(

@@ -82,6 +82,14 @@ class Agent:
 
             assistant_reply_json = fix_json_using_multiple_techniques(assistant_reply)
 
+            if assistant_reply_json == None:
+                logger.typewriter_log("Failed to parse the response from the AI.")
+                self.user_input = "NOT GOOD: INVALID JSON. GENERATE A VALID JSON RESPONSE."
+                self.full_message_history.append(
+                    create_chat_message("system", self.user_input)
+                )
+                continue
+
             commands = []
 
             # Print Assistant thoughts
@@ -105,6 +113,9 @@ class Agent:
             if commands is None or len(commands) == 0 or len(commands[0]) != 3:
                 logger.typewriter_log("No commands found in response.")
                 self.user_input = "NOT GOOD: THE \"commands\" LIST IS EMPTY. GENERATE A JSON RESPONSE WITH COMMANDS."
+                self.full_message_history.append(
+                    create_chat_message("system", self.user_input)
+                )
                 continue
 
             # Execute commands
