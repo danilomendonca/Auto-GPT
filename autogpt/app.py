@@ -34,7 +34,7 @@ from autogpt.json_utils.json_fix_llm import fix_and_parse_json
 from autogpt.memory import get_memory
 from autogpt.processing.text import summarize_text
 from autogpt.speech import say_text
-from autogpt.llm_utils import call_ai_function
+from autogpt.llm_utils import call_ai_function, create_chat_completion
 
 CFG = Config()
 AGENT_MANAGER = AgentManager()
@@ -195,6 +195,12 @@ def execute_command(command_name: str, arguments):
         elif command_name == "load_from_db":
             memory = get_memory(CFG)
             return memory.get(arguments["key"])
+        elif command_name == "ask_gpt4":
+            return create_chat_completion(
+                model=CFG.smart_llm_model,
+                messages=[{"role": "system", "content": "you are a smart assistant"}, {"role": "user", "content": arguments["prompt"]}],
+                max_tokens=8000,
+            )
         elif command_name == "start_agent":
             return start_agent(
                 arguments["name"], arguments["task"], arguments["prompt"]

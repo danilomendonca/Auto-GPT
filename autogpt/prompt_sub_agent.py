@@ -79,6 +79,7 @@ def get_sub_agent_prompt() -> str:
     # Define the command list
     commands = [
         ("Google Search", "google", {"input": "<search>"}),
+        ("Ask GPT-4", "ask_gpt4", {"prompt": "<prompt>"}),
         (
             "Start GPT Agent",
             "start_agent",

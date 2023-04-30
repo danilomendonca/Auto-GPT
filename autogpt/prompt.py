@@ -87,6 +87,7 @@ def get_prompt() -> str:
         #    "start_agent",
         #    {"name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"},
         #),
+        ("Ask GPT-4", "ask_gpt4", {"prompt": "<prompt>"}),
         (
             "Start Sub-Agent",
             "start_sub_agent",
