@@ -74,15 +74,14 @@ def chat_with_ai(
             str: The AI's response.
             """
             model = cfg.smart_llm_model  # TODO: Change model from hardcode to argument
-            # Reserve 1000 tokens for the response
-
+            # Reserve 2000 tokens for the response
             logger.debug(f"Token limit: {token_limit}")
-            send_token_limit = token_limit - 1000
+            send_token_limit = token_limit - 2000
 
             relevant_memory = (
-                []
-                if len(full_message_history) <= 3
-                else full_message_history[0:(len(full_message_history) - 3)]
+                ""
+                if len(full_message_history) == 0
+                else permanent_memory.get_relevant(str(full_message_history[-9:]), 10)
             )
 
             (
@@ -92,7 +91,7 @@ def chat_with_ai(
                 current_context,
             ) = generate_context(prompt, relevant_memory, full_message_history, model)
 
-            while current_tokens_used > 6000:
+            while current_tokens_used > 1000:
                 logger.warn(f"Memory is too large ({current_tokens_used} tokens), removing oldest message")
                 # remove memories until we are under 2500 tokens
                 relevant_memory = relevant_memory[1:]
@@ -109,8 +108,7 @@ def chat_with_ai(
                 [create_chat_message("user", user_input)], model
             )  # Account for user input (appended later)
 
-            added_count = 0
-            while next_message_to_add_index >= 0 and added_count < 3:
+            while next_message_to_add_index >= 0:
                 # print (f"CURRENT TOKENS USED: {current_tokens_used}")
                 message_to_add = full_message_history[next_message_to_add_index]
                 logger.debug(f"Adding message: {message_to_add}")
@@ -132,7 +130,6 @@ def chat_with_ai(
 
                 # Move to the next most recent message in the full message history
                 next_message_to_add_index -= 1
-                added_count += 1
 
             # Append user input, the length of this is accounted for above
             current_context.extend([create_chat_message("user", user_input)])
