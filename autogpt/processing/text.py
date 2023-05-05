@@ -4,14 +4,12 @@ from typing import Dict, Generator, Optional
 import spacy
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from autogpt import token_counter
 from autogpt.config import Config
-from autogpt.llm_utils import create_chat_completion
+from autogpt.llm import count_message_tokens, create_chat_completion
+from autogpt.logs import logger
 from autogpt.memory import get_memory
 
 CFG = Config()
-MEMORY = get_memory(CFG)
-
 
 def split_text(
     text: str,
@@ -45,7 +43,7 @@ def split_text(
         ]
 
         expected_token_usage = (
-            token_usage_of_chunk(messages=message_with_additional_sentence, model=model)
+            count_message_tokens(messages=message_with_additional_sentence, model=model)
             + 1
         )
         if expected_token_usage <= max_length:
@@ -57,7 +55,7 @@ def split_text(
                 create_message(" ".join(current_chunk), question)
             ]
             expected_token_usage = (
-                token_usage_of_chunk(messages=message_this_sentence_only, model=model)
+                count_message_tokens(messages=message_this_sentence_only, model=model)
                 + 1
             )
             if expected_token_usage > max_length:
@@ -67,10 +65,6 @@ def split_text(
 
     if current_chunk:
         yield " ".join(current_chunk)
-
-
-def token_usage_of_chunk(messages, model):
-    return token_counter.count_message_tokens(messages, model)
 
 
 def summarize_text(
@@ -92,13 +86,13 @@ def summarize_text(
 
     model = CFG.fast_llm_model
     text_length = len(text)
-    print(f"Text length: {text_length} characters")
-    used_tokens = token_counter.count_message_tokens([{'role': 'user', 'message': text}], model)
+    logger.info(f"Text length: {text_length} characters")
+    used_tokens = count_message_tokens([{'role': 'user', 'message': text}], model)
     if used_tokens > CFG.fast_token_limit:
         while used_tokens > CFG.fast_token_limit:
             text = text[0:-100]
-            used_tokens = token_counter.count_message_tokens([{'role': 'user', 'message': text}], model)
-        print(f"Text length exceeds {CFG.fast_token_limit} token limit, truncating to {len(text)} characters")
+            used_tokens = count_message_tokens([{'role': 'user', 'message': text}], model)
+        logger.info(f"Text length exceeds {CFG.fast_token_limit} token limit, truncating to {len(text)} characters")
 
     summaries = []
     chunks = list(
@@ -111,15 +105,16 @@ def summarize_text(
     for i, chunk in enumerate(chunks):
         if driver:
             scroll_to_percentage(driver, scroll_ratio * i)
-        print(f"Adding chunk {i + 1} / {len(chunks)} to memory")
+        logger.info(f"Adding chunk {i + 1} / {len(chunks)} to memory")
 
         memory_to_add = f"Source: {url}\n" f"Raw content part#{i + 1}: {chunk}"
 
-        MEMORY.add(memory_to_add)
+        memory = get_memory(CFG)
+        memory.add(memory_to_add)
 
         messages = [create_message(chunk, question)]
-        tokens_for_chunk = token_counter.count_message_tokens(messages, model)
-        print(
+        tokens_for_chunk = count_message_tokens(messages, model)
+        logger.info(
             f"Summarizing chunk {i + 1} / {len(chunks)} of length {len(chunk)} characters, or {tokens_for_chunk} tokens"
         )
 
@@ -128,15 +123,15 @@ def summarize_text(
             messages=messages,
         )
         summaries.append(summary)
-        print(
+        logger.info(
             f"Added chunk {i + 1} summary to memory, of length {len(summary)} characters"
         )
 
         memory_to_add = f"Source: {url}\n" f"Content summary part#{i + 1}: {summary}"
 
-        MEMORY.add(memory_to_add)
+        memory.add(memory_to_add)
 
-    print(f"Summarized {len(chunks)} chunks.")
+    logger.info(f"Summarized {len(chunks)} chunks.")
 
     combined_summary = "\n".join(summaries)
     messages = [create_message(combined_summary, question)]
