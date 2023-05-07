@@ -49,15 +49,14 @@ def build_default_prompt_generator() -> PromptGenerator:
     prompt_generator.add_constraint(
         'Do not include //comments into the JSON response'
     )
+    #prompt_generator.add_constraint(
+    #    'Break down complex plans into smaller sub-plans. Avoid too many commands in the "commands" list.'
+    #)
+
+
     ## Sub-agents
     prompt_generator.add_constraint(
-        'Sub-agents have no accesss to local files or folders'
-    )
-    prompt_generator.add_constraint(
-        'Sub-agents have no accesss to google or internet browsing'
-    )
-    prompt_generator.add_constraint(
-        'Sub-agents have no memory of previous conversations. Send any relevant information in the "data" field.'
+        'Sub-agents start without memory. Send all relevant information in the start_sub_agent "data" field.'
     )
     prompt_generator.add_constraint(
         'Be specific with sub-agent goals. Specify what they should respond with.'
