@@ -52,12 +52,13 @@ def build_sub_agent_prompt_generator() -> PromptGenerator:
     ## Sub-agents
     prompt_generator.add_constraint(
         'Include all relevant information in the final complete response once the goal has been achieved'
-    )'Be specific with sub-agent goals. Specify what they should respond with.'
+    )
 
     # Define the command list
     commands = [
         ("Ask GPT-4", "ask_gpt4", {"prompt": "<prompt>"}),
-        ("Task Complete (Shutdown)", "task_complete", {"reason": "<reason>"})
+        ("Send final complete response", "send_final_response", {"response": "<agent final complete response>"})
+        #("Task Complete (Shutdown)", "task_complete", {"reason": "<reason>"})
     ]
 
     blocked_commands = [
@@ -66,20 +67,21 @@ def build_sub_agent_prompt_generator() -> PromptGenerator:
         "save_to_db",
         "load_from_db",
         "delete_agent",
-        "create_file",
         "clone_path",
         "write_to_file",
-        "read_file",
-        "delete_file",
         "file_exists",
-        "append_to_file",
-        "replace_in_file",
-        "search_files",
+        #"create_file",
+        #"read_file",
+        #"delete_file",
+        #"append_to_file",
+        #"replace_in_file",
+        #"search_files",
         "analyze_code",
         "code",
         "focus",
         "execute_python_file",
-        "send_tweet"
+        "send_tweet",
+        "check_task_completion"
     ]
     for command_name in blocked_commands:
         prompt_generator.add_to_block_list(command_name)
@@ -89,9 +91,9 @@ def build_sub_agent_prompt_generator() -> PromptGenerator:
         prompt_generator.add_command(command_label, command_name, args)
 
     # Add resources to the PromptGenerator object
-    prompt_generator.add_resource(
-        "Internet access for searches and information gathering."
-    )
+    #prompt_generator.add_resource(
+    #    "Internet access for searches and information gathering."
+    #)
     prompt_generator.add_resource("Long Term memory management.")
     prompt_generator.add_resource(
         "GPT-3.5 powered Agents for delegation of simple tasks."
@@ -115,3 +117,35 @@ def build_sub_agent_prompt_generator() -> PromptGenerator:
     )
     prompt_generator.add_performance_evaluation("Write all code to a file.")
     return prompt_generator
+
+def construct_sub_agent_ai_config(ai_name: str, ai_role: str, ai_goals: list) -> AIConfig:
+    """Construct the prompt for the AI to respond to
+
+    Returns:
+        str: The prompt string
+    """
+    config = AIConfig(ai_name, ai_role, ai_goals, 0.0)
+
+    # set the total api budget
+    api_manager = ApiManager()
+    api_manager.set_total_budget(config.api_budget)
+
+    # Agent Created, print message
+    logger.typewriter_log(
+        config.ai_name,
+        Fore.LIGHTBLUE_EX,
+        "has been created with the following details:",
+        speak_text=True,
+    )
+
+    # Print the ai config details
+    # Name
+    logger.typewriter_log("Name:", Fore.GREEN, config.ai_name, speak_text=False)
+    # Role
+    logger.typewriter_log("Role:", Fore.GREEN, config.ai_role, speak_text=False)
+    # Goals
+    logger.typewriter_log("Goals:", Fore.GREEN, "", speak_text=False)
+    for goal in config.ai_goals:
+        logger.typewriter_log("-", Fore.GREEN, goal, speak_text=False)
+
+    return config

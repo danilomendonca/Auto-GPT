@@ -57,7 +57,7 @@ def build_default_prompt_generator() -> PromptGenerator:
         'Sub-agents have no accesss to google or internet browsing'
     )
     prompt_generator.add_constraint(
-        'Sub-agents have no memory of previous conversations. Send any relevant information in the "input" field.'
+        'Sub-agents have no memory of previous conversations. Send any relevant information in the "data" field.'
     )
     prompt_generator.add_constraint(
         'Be specific with sub-agent goals. Specify what they should respond with.'
@@ -65,8 +65,13 @@ def build_default_prompt_generator() -> PromptGenerator:
 
     # Define the command list
     commands = [
-        ("Ask GPT-4", "ask_gpt4", {"prompt": "<prompt>"}),
-        ("Replace text in file", "replace_in_file", {"file": "<file>", "text": "<non empty text>", "new_text": "<new_text>"}),
+        #("Ask GPT-4", "ask_gpt4", {"prompt": "<prompt>"}),
+        (
+            "Start Sub-Agent",
+            "start_sub_agent",
+            {"name": "<name>", "role": "<role>", "goal": "<short_goal_desc>", "data": "<context or input needed for goal>", "respond_with": "<the sub agent final response specification>"},
+        ),
+        #("Replace text in file", "replace_in_file", {"file": "<file>", "text": "<non empty text>", "new_text": "<new_text>"}),
         ("Task Complete (Shutdown)", "task_complete", {"reason": "<reason>"})
 
     ]
@@ -75,13 +80,22 @@ def build_default_prompt_generator() -> PromptGenerator:
         "google",
         "browse_website",
         "get_text_summary",
+        "start_agent",
+        "message_agent",
+        "ask_agent",
         "list_agents",
         "save_to_mem",
         "load_from_mem",
         "delete_agent",
         "clone_path",
+        #"search_files",
+        #"read_file",
+        #"delete_file",
         "write_to_file",
         "file_exists",
+        "create_file",
+        "append_to_file",
+        "replace_in_file",
         "analyze_code",
         "code",
         "focus",

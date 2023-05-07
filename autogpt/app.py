@@ -174,7 +174,7 @@ def execute_command(
             return create_chat_completion(
                 model=CFG.smart_llm_model,
                 messages=[{"role": "system", "content": "you are a smart assistant"}, {"role": "user", "content": arguments["prompt"]}],
-                max_tokens=8000,
+                max_tokens=4096,
             )
         elif command_name == "ask_agent":
             return message_agent(arguments["key"], arguments["prompt"])

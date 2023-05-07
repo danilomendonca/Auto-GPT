@@ -342,7 +342,7 @@ class Agent:
             role = arguments.get("role")
             goal = arguments.get("goal")
             respond_with = arguments.get("respond_with")
-            start_input = arguments.get("input") or None
+            start_input = arguments.get("data") or None
             return self.start_sub_agent(
                 name,
                 role,
@@ -361,14 +361,14 @@ class Agent:
         """Starts a sub-agent along with its iteraction loop."""
 
         from autogpt.memory import get_memory
-        from autogpt.prompts.prompt_sub_agent import build_sub_agent_prompt_generator
+        from autogpt.prompts.prompt_sub_agent import build_sub_agent_prompt_generator, construct_sub_agent_ai_config
 
         cfg = Config()
         prompt_generator = build_sub_agent_prompt_generator()
         # Initialize variables
         full_message_history = []
-        if start_input is not None:
-            full_message_history.append(create_chat_message("user", start_input))
+        if start_input is not None and start_input != "":
+            full_message_history.append(create_chat_message("user", f"Context: {start_input}"))
         next_action_count = 0
 
         # Initialize memory and make sure it is empty.
