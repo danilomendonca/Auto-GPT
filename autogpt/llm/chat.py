@@ -2,6 +2,7 @@ import time
 from random import shuffle
 
 from openai.error import RateLimitError
+from requests.exceptions import ReadTimeout
 
 from autogpt.config import Config
 from autogpt.llm.api_manager import ApiManager
@@ -253,4 +254,7 @@ def chat_with_ai(
         except RateLimitError:
             # TODO: When we switch to langchain, this is built in
             logger.warn("Error: ", "API Rate Limit Reached. Waiting 10 seconds...")
+            time.sleep(10)
+        except ReadTimeout:
+            print("Error: ", "API Read Timeout. Waiting 10 seconds...")
             time.sleep(10)
