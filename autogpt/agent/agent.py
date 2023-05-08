@@ -12,6 +12,8 @@ from autogpt.spinner import Spinner
 from autogpt.utils import clean_input
 from autogpt.workspace import Workspace
 
+from autogpt.commands.file_operations import read_file
+
 class Agent:
     """Agent class for interacting with Auto-GPT.
 
