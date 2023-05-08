@@ -49,9 +49,9 @@ def build_default_prompt_generator() -> PromptGenerator:
     prompt_generator.add_constraint(
         'Do not include //comments into the JSON response'
     )
-    #prompt_generator.add_constraint(
-    #    'Break down complex plans into smaller sub-plans. Avoid too many commands in the "commands" list.'
-    #)
+    prompt_generator.add_constraint(
+        'Break down complex plans into smaller sub-plans. Avoid too many commands in the "commands" list.'
+    )
 
 
     ## Sub-agents
@@ -64,7 +64,7 @@ def build_default_prompt_generator() -> PromptGenerator:
 
     # Define the command list
     commands = [
-        #("Ask GPT-4", "ask_gpt4", {"prompt": "<prompt>"}),
+        ("Ask GPT-4", "ask_gpt4", {"prompt": "<prompt>"}),
         (
             "Start Sub-Agent",
             "start_sub_agent",
@@ -80,6 +80,7 @@ def build_default_prompt_generator() -> PromptGenerator:
         "google",
         "browse_website",
         "get_text_summary",
+        "get_hyperlinks",
         "start_agent",
         "message_agent",
         "ask_agent",
@@ -93,9 +94,9 @@ def build_default_prompt_generator() -> PromptGenerator:
         #"delete_file",
         "write_to_file",
         "file_exists",
-        "create_file",
-        "append_to_file",
-        "replace_in_file",
+        #"create_file",
+        #"append_to_file",
+        #"replace_in_file",
         "analyze_code",
         "code",
         "focus",
