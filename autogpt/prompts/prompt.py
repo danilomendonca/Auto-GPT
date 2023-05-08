@@ -71,6 +71,7 @@ def build_default_prompt_generator() -> PromptGenerator:
             {"name": "<name>", "role": "<role>", "goal": "<short_goal_desc>", "data": "<context or input needed for goal>", "respond_with": "<the sub agent final response specification>"},
         ),
         #("Replace text in file", "replace_in_file", {"file": "<file>", "text": "<non empty text>", "new_text": "<new_text>"}),
+        ("Check Task Completion", "check_task_completion", ""),
         ("Task Complete (Shutdown)", "task_complete", {"reason": "<reason>"})
 
     ]

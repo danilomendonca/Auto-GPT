@@ -256,6 +256,8 @@ class Agent:
                     result = f"Human feedback: {user_input}"
                 elif command_name == "send_final_response":
                     return arguments.get("response")
+                elif command_name == "check_task_completion":
+                    return self.check_task_completion()
                 elif command_name == "abort":
                     return f"Aborting. Reason: {arguments.get('reason')}"
                 else:
@@ -394,6 +396,20 @@ class Agent:
             workspace_directory=self.workspace_directory
         )
         return sub_agent.start_interaction_loop()
+
+    def check_task_completion(self) -> str:
+        """Message an agent with a given key and message"""
+
+        content = read_file(f"{self.workspace_directory}/recipes.html")
+
+        logger.info(f"Content: {content}")
+
+        prompt = f"Are there two complete recipes (ingredients and instructions) in the following content?\n\n{content} Reply with \"Yes\" or \"No\" + what is missing."
+        return create_chat_completion(
+            model=CFG.smart_llm_model,
+            messages=[{"role": "system", "content": "you are a smart assistant"}, {"role": "user", "content": prompt}],
+            max_tokens=8000,
+        )
 
     def replace_arguments(self, command:str, arguments:str, last_command_response:str) -> dict:
         """Replace the arguments in the command based on the previous command response."""
