@@ -380,9 +380,11 @@ class Agent:
             "Using memory of type:", Fore.GREEN, f"{memory.__class__.__name__}"
         )
         logger.typewriter_log("Using Browser:", Fore.GREEN, cfg.selenium_web_browser)
+
+        ai_config = construct_sub_agent_ai_config(ai_name, ai_role, ai_goals)
         sub_prompt = ai_config.construct_full_prompt(prompt_generator)
         if cfg.debug_mode:
-            logger.typewriter_log("Prompt:", Fore.GREEN, system_prompt)
+            logger.typewriter_log("Prompt:", Fore.GREEN, sub_prompt)
 
         sub_agent = Agent(
             ai_name=ai_name,
